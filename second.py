@@ -2,19 +2,6 @@ from turtle import onclick
 import streamlit as st
 from streamlit_tags import st_tags, st_tags_sidebar
 
-st.write("# Domain Specific answer grading and scoring")
-
-# st.code(body='''keywords = st_tags(
-#     label='# Enter Keywords:',
-#     text='Press enter to add more',
-#     value=['Zero', 'One', 'Two'],
-#     suggestions=['five', 'six', 'seven', 'eight', 'nine', 'three', 'eleven', 'ten', 'four'],
-#     maxtags = 4,
-#     key='1')''',
-#         language="python")
-
-# maxtags = st.slider('Number of Keywords allowed?', 1,
-#                     10, 3, key='jfnkerrnfvikwqejn')
 
 keywords = st_tags(
     label='# Enter Keywords:',
