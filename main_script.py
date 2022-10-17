@@ -2,13 +2,16 @@
 import streamlit as st
 import pandas as pd
 import streamlit_authenticator as stauth
-import pickle
-from pathlib import Path
 import yaml
 from streamlit_tags import st_tags
-
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 
 st.write("# Autograder")
+
+model = SentenceTransformer('bert-base-nli-mean-tokens')
+
+ans_arr = []
 
 
 def stinit():
@@ -28,20 +31,35 @@ def stinit():
 
     #     st.markdown(s)
 
-    st.write("### Question:")
-    ques = st.text_area(label="Question",
-                              placeholder="please type the question here")
+    with st.form("autograder_form", clear_on_submit=True):
 
-    st.write("### Reference answer:")
-    ref_answer = st.text_area(label="Reference answer",
-                              placeholder="please type the reference answer here")
+        st.write("### Question:")
+        ques = st.text_area(label="Question",
+                            placeholder="please type the question here")
 
-    st.write("### Student answer:")
-    ref_answer = st.text_area(label="Student answer",
-                              placeholder="please enter the student answer here")
-    result = st.button(label="Get Score")
-    if result:
-        st.success("answers evaluated successfully!!")
+        st.write("### Reference answer:")
+        ref_answer = st.text_area(label="Reference answer",
+                                  placeholder="please type the reference answer here")
+
+        ans_arr.append(ref_answer)
+
+        st.write("### Student answer:")
+        stu_answer = st.text_area(label="Student answer",
+                                  placeholder="please enter the student answer here")
+
+        ans_arr.append(stu_answer)
+
+        submit = st.form_submit_button("Submit")
+
+        if submit:
+            ans_embed = model.encode(ans_arr)
+            result = cosine_similarity([ans_embed[0]], ans_embed[1:])
+            st.write("the similarity score is :", round(result[0][0], 1))
+            st.write(f"the score (out of 5) is:", round(result[0][0]*5, 1))
+            st.success("answer evaluated successfully!!")
+
+            # res2 = euclidean_distances([ans_embed[0]], ans_embed[1:])
+            # st.write("the similarity score is :", res2[0][0])
 
 
 hashed_passwords = stauth.Hasher(['admin', 'lorem']).generate()
@@ -66,9 +84,6 @@ if option == "Login":
     if st.session_state["authentication_status"]:
         authenticator.logout('Logout', 'main')
 
-        # data = pd.read_csv("ds.csv")
-        # df = pd.DataFrame(data)
-        # st.write(df)
         stinit()
     elif st.session_state["authentication_status"] == False:
         st.error('Username/password is incorrect')
